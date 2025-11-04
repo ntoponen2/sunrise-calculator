@@ -1,3 +1,4 @@
+// index.js (usually unchanged, but here for reference)
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
