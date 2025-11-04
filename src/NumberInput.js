@@ -2,10 +2,10 @@
 // This is a reusable React component for a controlled number input field.
 // It handles formatting, validation, formulas, and navigation as per requirements.
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { evaluate } from 'mathjs'; // Import evaluate from mathjs for safe formula parsing
 
-const NumberInput = ({
+const NumberInput = React.forwardRef(({
   min = '*', // Minimum value, '*' means no min
   max = '*', // Maximum value, '*' means no max
   step = '*', // Step for mouse input, '*' means no step (text input)
@@ -13,10 +13,9 @@ const NumberInput = ({
   id, // Unique ID for the input
   onChange, // Optional callback for value change
   navigateToField // Function to handle arrow key navigation (passed from parent)
-}) => {
+}, ref) => {
   const [value, setValue] = useState(''); // Current input value (formatted or raw)
   const [error, setError] = useState(false); // Flag for error state
-  const inputRef = useRef(null); // Ref to the input element for focus control
   const decimals = dec === '*' ? 2 : parseInt(dec, 10); // Resolve decimals
 
   // Helper to add thousands separators (e.g., 1200.55 -> 1 200.55)
@@ -47,13 +46,16 @@ const NumberInput = ({
 
   // Validate against min/max
   const validateMinMax = (num) => {
-    return !(((min !== '*' && num < parseFloat(min)) || (max !== '*' && num > parseFloat(max))));
+    const minNum = min !== '*' ? parseFloat(min) : NaN;
+    const maxNum = max !== '*' ? parseFloat(max) : NaN;
+    if (!isNaN(minNum) && num < minNum) return false;
+    if (!isNaN(maxNum) && num > maxNum) return false;
+    return true;
   };
 
   // Handle key down: Filter allowed characters and handle arrows/TAB
   const handleKeyDown = (e) => {
     const allowedChars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', ',', '=', '-', '+', '/', '*', '(', ')'];
-    const isFirstChar = value.length === 0;
 
     // Handle comma -> dot replacement
     if (e.key === ',') {
@@ -63,7 +65,7 @@ const NumberInput = ({
     }
 
     // '=' only as first char
-    if (e.key === '=' && !isFirstChar) {
+    if (e.key === '=' && !(e.target.selectionStart === 0)) {
       e.preventDefault();
       return;
     }
@@ -74,29 +76,43 @@ const NumberInput = ({
       return;
     }
 
-    // Handle arrow keys for navigation
+    // Handle arrow keys for navigation only at edges for left/right
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-      e.preventDefault();
-      navigateToField(e.key, id); // Call parent navigation handler
+      const { selectionStart } = e.target;
+      let navigate = false;
+      let navDirection = '';
+      if (e.key === 'ArrowUp') {
+        navigate = true;
+        navDirection = 'prev';
+      } else if (e.key === 'ArrowDown') {
+        navigate = true;
+        navDirection = 'next';
+      } else if (e.key === 'ArrowLeft' && selectionStart === 0) {
+        navigate = true;
+        navDirection = 'prev';
+      } else if (e.key === 'ArrowRight' && selectionStart === value.length) {
+        navigate = true;
+        navDirection = 'next';
+      }
+      if (navigate) {
+        e.preventDefault();
+        navigateToField(navDirection, id);
+      }
+      // Else, allow default cursor movement
     }
   };
 
   // Handle input change: Enforce decimals limit
   const handleInput = (e) => {
     const rawValue = e.target.value;
-    const parts = rawValue.split('.');
-    if (parts[1] && parts[1].length > decimals) {
-      // Max decimals reached: Trigger blur
-      inputRef.current.blur();
-    }
     setValue(rawValue);
   };
 
   // On focus: Remove separators, select all
-  const handleFocus = () => {
+  const handleFocus = (e) => {
     const raw = removeThousandsSeparators(value);
     setValue(raw);
-    inputRef.current.select();
+    e.target.setSelectionRange(0, 0);
   };
 
   // On blur: Format, evaluate, validate
@@ -108,16 +124,16 @@ const NumberInput = ({
     const evaluated = evaluateFormula(processed);
     if (processed.startsWith('=') && evaluated === null) {
       setError(true);
-      inputRef.current.focus(); // Keep focus on error
+      setTimeout(() => ref.current.focus(), 0); // Queue focus to handle tab/blur properly
       return;
     }
-    processed = evaluated !== null ? evaluated : processed;
+    processed = evaluated;
 
     // Parse to number and validate min/max
     const num = parseFloat(processed);
     if (isNaN(num) || !validateMinMax(num)) {
       setError(true);
-      inputRef.current.focus(); // Keep focus on error
+      setTimeout(() => ref.current.focus(), 0); // Queue focus to handle tab/blur properly
       return;
     }
 
@@ -133,7 +149,7 @@ const NumberInput = ({
 
   return (
     <input
-      ref={inputRef}
+      ref={ref}
       type={inputType}
       value={value}
       onKeyDown={handleKeyDown}
@@ -144,6 +160,6 @@ const NumberInput = ({
       {...stepProp} // Add step if applicable
     />
   );
-};
+});
 
 export default NumberInput;
