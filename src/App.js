@@ -2,7 +2,7 @@
 // This is the main entry point of the React app.
 // It renders a single NumberInput component with customizable props (min, max, step, dec) via text inputs.
 
-import React, { useState, useRef } from 'react';
+import React, {useState, useRef} from 'react';
 import NumberInput from './NumberInput';
 import './App.css'; // Import styles
 
@@ -46,10 +46,21 @@ function App() {
     }
   };
 
+  const handleDigitsInput = (e, id) => {
+    const allowedChars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', 'Backspace'];
+
+    // Block non-allowed keys (except control keys like backspace, delete, arrows)
+    if (!allowedChars.includes(e.key) || (e.target.value.includes('*') && e.key !== 'Backspace')) {
+      e.preventDefault();
+      return;
+    }
+    handleCustomKeyDown(e, id);
+  }
+
   // Keydown handler for custom text inputs (similar to NumberInput for arrows)
   const handleCustomKeyDown = (e, id) => {
     if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
-      const { selectionStart, value } = e.target;
+      const {selectionStart, value} = e.target;
       let navigate = false;
       let navDirection = '';
       if (e.key === 'ArrowUp') {
@@ -92,9 +103,10 @@ function App() {
         <input
           ref={minRef}
           type="text"
+          pattern="[0-9*]*"
           value={min}
           onChange={(e) => setMin(e.target.value)}
-          onKeyDown={(e) => handleCustomKeyDown(e, 'minInput')}
+          onKeyDown={(e) => handleDigitsInput(e, 'minInput')}
         />
         <br />
 
@@ -102,9 +114,10 @@ function App() {
         <input
           ref={maxRef}
           type="text"
+          pattern="\d*"
           value={max}
           onChange={(e) => setMax(e.target.value)}
-          onKeyDown={(e) => handleCustomKeyDown(e, 'maxInput')}
+          onKeyDown={(e) => handleDigitsInput(e, 'maxInput')}
         />
         <br />
 
@@ -112,9 +125,10 @@ function App() {
         <input
           ref={stepRef}
           type="text"
+          pattern="\d*"
           value={step}
           onChange={(e) => setStep(e.target.value)}
-          onKeyDown={(e) => handleCustomKeyDown(e, 'stepInput')}
+          onKeyDown={(e) => handleDigitsInput(e, 'stepInput')}
         />
         <br />
 
@@ -122,9 +136,10 @@ function App() {
         <input
           ref={decRef}
           type="text"
+          pattern="\d*"
           value={dec}
           onChange={(e) => setDec(e.target.value)}
-          onKeyDown={(e) => handleCustomKeyDown(e, 'decInput')}
+          onKeyDown={(e) => handleDigitsInput(e, 'decInput')}
         />
       </form>
     </div>
