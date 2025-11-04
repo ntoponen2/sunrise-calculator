@@ -1,22 +1,76 @@
 /* App.css */
-/* Basic styles for the app and error class */
+/* Enhanced styles for the app using green, gold, white, and black colors.
+   - Background: White for main content, black for accents.
+   - Text: Black for readability, gold for labels.
+   - Inputs: Larger size, green borders, gold hover/focus.
+   - Error: Red border with black background for visibility.
+   - Overall: Bigger fonts, padding, and modern look with shadows. */
+
+body {
+    background-color: #ffffff; /* White background */
+    background-image: url('https://zarya35.ru/wp-content/uploads/2021/11/pshenichnoe-pole-nivy-prostranstvo.jpg');
+    color: #000000; /* Black text */
+    font-family: 'Arial', sans-serif; /* Clean font */
+}
 
 .App {
     text-align: center;
-    margin: 20px;
+    margin: 25px auto; /* Center with more margin */
+    padding: 20px 0;
+    max-width: 60%; /* Limit width for better readability */
+    background-color: #f5f5f5; /* Light gray-white for container */
+    border: 5px solid #008000; /* Green border */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle black shadow */
 }
 
-input {
-    margin: 10px;
-    padding: 5px;
-    width: 200px;
+h1 {
+    color: #d4af37; /* Gold color for heading */
+    font-size: 2em; /* Bigger heading */
+    margin-bottom: 5px;
 }
 
-input.error {
-    border: 2px solid red; /* Red border on error */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align left for better form layout */
+    padding: 0 1em;
+    margin-bottom: 1em;
 }
 
 label {
-    display: block;
-    margin-top: 20px;
+    color: #d4af37; /* Gold for labels */
+    font-weight: bold;
+    font-size: 1.2em; /* Larger labels */
+    margin: 15px 0 5px; /* More spacing */
+}
+
+input {
+    width: 100%; /* Full width */
+    padding-top: .3em;
+    padding-bottom: .3em;
+    font-size: 1.2em; /* Larger text */
+    border: 2px solid #008000; /* Green border */
+    border-radius: 5px; /* Rounded */
+    background-color: #ffffff; /* White background */
+    color: #000000; /* Black text */
+    transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transitions */
+}
+
+input:focus {
+    border-color: #d4af37; /* Gold on focus */
+    box-shadow: 0 0 5px rgba(212, 175, 55, 0.5); /* Gold glow */
+    outline: none;
+}
+
+input.error {
+    border: 2px solid #ff0000; /* Red for error */
+    background-color: #ffebee; /* Light red background */
+    color: #000000; /* Black text for contrast */
+}
+
+p {
+    color: #008000; /* Green for instructions */
+    font-size: 1.1em;
+    margin-top: 30px;
 }

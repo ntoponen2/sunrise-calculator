@@ -49,8 +49,7 @@ const NumberInput = React.forwardRef(({
     const minNum = min !== '*' ? parseFloat(min) : NaN;
     const maxNum = max !== '*' ? parseFloat(max) : NaN;
     if (!isNaN(minNum) && num < minNum) return false;
-    if (!isNaN(maxNum) && num > maxNum) return false;
-    return true;
+    return !(!isNaN(maxNum) && num > maxNum);
   };
 
   // Handle key down: Filter allowed characters and handle arrows/TAB
@@ -65,7 +64,7 @@ const NumberInput = React.forwardRef(({
     }
 
     // '=' only as first char
-    if (e.key === '=' && !(e.target.selectionStart === 0)) {
+    if (e.key === '=' && e.target.selectionStart !== 0) {
       e.preventDefault();
       return;
     }
@@ -133,7 +132,6 @@ const NumberInput = React.forwardRef(({
     const num = parseFloat(processed);
     if (isNaN(num) || !validateMinMax(num)) {
       setError(true);
-      setTimeout(() => ref.current.focus(), 0); // Queue focus to handle tab/blur properly
       return;
     }
 
@@ -143,19 +141,35 @@ const NumberInput = React.forwardRef(({
     if (onChange) onChange(formatted);
   };
 
-  // Input type: 'number' if step provided, else 'text'
-  const inputType = step === '*' ? 'text' : 'number';
+  // Add below other handlers in NumberInput.js
+  const handleWheel = (e) => {
+    e.preventDefault(); // Prevent page scrolling when hovering input
+    if (step === '*') return;
+    const current = parseFloat(removeThousandsSeparators(value)) || 0;
+    const stepValue = parseFloat(step);
+
+    // deltaY > 0 means scrolling down (decrease value), < 0 means up (increase)
+    const newValue = e.deltaY < 0 ? current + stepValue : current - stepValue;
+
+    // Format and update
+    const formatted = addThousandsSeparators(newValue.toFixed(decimals));
+    setValue(formatted);
+    if (onChange) onChange(formatted);
+  };
+
+
   const stepProp = step !== '*' ? { step: parseFloat(step) } : {};
 
   return (
     <input
       ref={ref}
-      type={inputType}
+      type={'text'}
       value={value}
       onKeyDown={handleKeyDown}
       onInput={handleInput}
       onFocus={handleFocus}
       onBlur={handleBlur}
+      onWheel={handleWheel}
       className={error ? 'error' : ''} // Apply error class if invalid
       {...stepProp} // Add step if applicable
     />
