@@ -48,8 +48,7 @@ const NumberInput = React.forwardRef(({
   const validateMinMax = (num) => {
     const minNum = min !== '*' ? parseFloat(min) : NaN;
     const maxNum = max !== '*' ? parseFloat(max) : NaN;
-    if (!isNaN(minNum) && num < minNum) return false;
-    return !(!isNaN(maxNum) && num > maxNum);
+    setError((!isNaN(minNum) && num < minNum) || (!isNaN(maxNum) && num > maxNum));
   };
 
   // Handle key down: Filter allowed characters and handle arrows/TAB
@@ -69,8 +68,14 @@ const NumberInput = React.forwardRef(({
       return;
     }
 
+    if (['Tab', 'Enter'].includes(e.key)) {
+      e.preventDefault();
+      e.target.blur();
+      return;
+    }
+
     // Block non-allowed keys (except control keys like backspace, delete, arrows)
-    if (!allowedChars.includes(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab'].includes(e.key) && !(e.ctrlKey || e.metaKey)) {
+    if (!allowedChars.includes(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key) && !(e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       return;
     }
@@ -116,6 +121,8 @@ const NumberInput = React.forwardRef(({
 
   // On blur: Format, evaluate, validate
   const handleBlur = () => {
+    if (value === '') return;
+
     let processed = removeThousandsSeparators(value);
     setError(false);
 
@@ -130,10 +137,7 @@ const NumberInput = React.forwardRef(({
 
     // Parse to number and validate min/max
     const num = parseFloat(processed);
-    if (isNaN(num) || !validateMinMax(num)) {
-      setError(true);
-      return;
-    }
+    validateMinMax(num);
 
     // Format with separators and decimals
     const formatted = addThousandsSeparators(num.toFixed(decimals));
@@ -151,12 +155,13 @@ const NumberInput = React.forwardRef(({
     // deltaY > 0 means scrolling down (decrease value), < 0 means up (increase)
     const newValue = e.deltaY < 0 ? current + stepValue : current - stepValue;
 
+    validateMinMax(newValue);
+
     // Format and update
     const formatted = addThousandsSeparators(newValue.toFixed(decimals));
     setValue(formatted);
     if (onChange) onChange(formatted);
   };
-
 
   const stepProp = step !== '*' ? { step: parseFloat(step) } : {};
 

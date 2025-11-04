@@ -47,12 +47,15 @@ function App() {
   };
 
   const handleDigitsInput = (e, id) => {
-    const allowedChars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', 'Backspace'];
+    const allowedChars = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', 'Backspace', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
 
     // Block non-allowed keys (except control keys like backspace, delete, arrows)
-    if (!allowedChars.includes(e.key) || (e.target.value.includes('*') && e.key !== 'Backspace')) {
+    if (!allowedChars.includes(e.key)) {
       e.preventDefault();
       return;
+    }
+    if(e.target.value.includes('*') && !['Backspace', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+      e.target.value = '';
     }
     handleCustomKeyDown(e, id);
   }
@@ -103,10 +106,9 @@ function App() {
         <input
           ref={minRef}
           type="text"
-          pattern="[0-9*]*"
           value={min}
           onChange={(e) => setMin(e.target.value)}
-          onKeyDown={(e) => handleDigitsInput(e, 'minInput')}
+          onKeyDown={(e) => handleDigitsInput(e, 'minInput', min, setMin)}
         />
         <br />
 
@@ -114,7 +116,6 @@ function App() {
         <input
           ref={maxRef}
           type="text"
-          pattern="\d*"
           value={max}
           onChange={(e) => setMax(e.target.value)}
           onKeyDown={(e) => handleDigitsInput(e, 'maxInput')}
